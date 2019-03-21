@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Flask Intro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <!-- socketio -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+        <!-- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script> -->
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        function myPeriodicFunction(){
+          socket.emit("periodicRequest", "");
+        }
+
+        $(document).ready(function(){
+
+          socket.on('connect', function() {
+             socket.emit('my_event', "connected!");
+          });
+
+          setInterval(function(){myPeriodicFunction()}, 100);
+
+          socket.on('message_reply', function(mes) {
+            console.log('message_reply ', mes)
+            if (mes == "result: 1") { alert("Succes")}
+            else { alert("FAIL")}
+        });
+
+          socket.on('robot_position', function(mes){
+            
+          })
+
+          socket.on('big_pose', function(mes){
+            console.log(mes)
+            $("#big_robot").html("big_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
+          })
+          socket.on('enemy1_pose', function(mes){
+            console.log(mes)
+            $("#enemy1_robot").html("enemy1_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
+          })
+          socket.on('enemy2_pose', function(mes){
+            console.log(mes)
+            $("#enemy2_robot").html("enemy2_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
+          })
+          socket.on('small_pose', function(mes){
+            console.log(mes)
+            $("#small_robot").html("small_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
+          })
+          $( ".btn-primary" ).click(function() {
+            var id =  $(this).attr('id');
+            socket.emit('message', id);
+          });
+        })
+    </script>
+
+    
+
+
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm">
+          
+        </div>
+        <div class="col-sm">
+          <div class="card" style="width: 36rem;">
+            <div class="card-header">
+              Featured
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">Выбор половины поля</h5>
+              <p class="card-text">Для установки стороны поля нажмите сообтветсвующую кнопку</p>
+              <a class="btn btn-primary" id="setGreen">Зелёная сторона</a>
+              <a class="btn btn-primary" id="setOrange">Оранжевая сторона</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm">
+          
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 10px"> </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm">
+          <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Статус Сцены</h5>
+              <h6 class="card-subtitle mb-2 text-muted">Поиск кубов</h6>
+              <!-- <p class="card-text">Описание?</p> -->
+              <a class="btn btn-primary" id="recalibrate" >Перекалибровать</a>
+              <!-- <a href="#" class="card-link">Card link</a> -->
+              <!-- <a href="#" class="card-link">Another link</a> -->
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm">
+          <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Положение роботов</h5>
+              <!-- <h6 class="card-subtitle mb-2 text-muted">Поиск кубов</h6> -->
+              <p class="card-text" id="big_robot">наш 1 Описание?</p>
+              <p class="card-text" id="small_robot">наш 2 Описание?</p>
+              <p class="card-text" id="enemy1_robot">наш 3 Описание?</p>
+              <p class="card-text" id="enemy2_robot">наш 4 Описание?</p>
+                
+            </div>
+          </div>
+        </div>
+        <div class="col-sm">
+          
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
+
+<script type="text/javascript">
+  
+
+</script>
