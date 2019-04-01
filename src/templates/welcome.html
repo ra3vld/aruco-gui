@@ -61,17 +61,23 @@
 
           socket.on('camera_position', function(mes)
           {
-            $("#camera_position").html(mes)
+            $("#camera_position").html("текещее положение камеры "+mes)
           })
 
           socket.on('Scene_statuses', function(mes)
           {
-            $("#scene_statuses").html(mes)
+            $("#scene_statuses").html("текущий статус "+mes)
           })
 
           socket.on('calibation_status', function(mes)
           {
-            $("#calibation_status").html(mes)
+          	if (mes ==0)
+            {
+            	$("#calibation_status").html("калибровочные маркеры не были найдены")
+            }
+            else{
+            	$("#calibation_status").html("калибровка прошла успешно")
+            }
             
           })
 
