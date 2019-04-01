@@ -33,7 +33,7 @@
           setInterval(function(){myPeriodicFunction()}, 100);
 
           socket.on('message_reply', function(mes) {
-            console.log('message_reply ', mes)
+            
             if (mes == "result: 1") { alert("Succes")}
             else { alert("FAIL")}
         });
@@ -43,21 +43,38 @@
           })
 
           socket.on('big_pose', function(mes){
-            console.log(mes)
+            
             $("#big_robot").html("big_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
           })
           socket.on('enemy1_pose', function(mes){
-            console.log(mes)
+            
             $("#enemy1_robot").html("enemy1_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
           })
           socket.on('enemy2_pose', function(mes){
-            console.log(mes)
+            
             $("#enemy2_robot").html("enemy2_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
           })
           socket.on('small_pose', function(mes){
-            console.log(mes)
+            
             $("#small_robot").html("small_robot:   x: " +mes["x"].substring(0, 5) + "  y:" + mes["y"].substring(0, 5) + "   z: " +mes["z"].substring(0, 5))
           })
+
+          socket.on('camera_position', function(mes)
+          {
+            $("#camera_position").html(mes)
+          })
+
+          socket.on('Scene_statuses', function(mes)
+          {
+            $("#scene_statuses").html(mes)
+          })
+
+          socket.on('calibation_status', function(mes)
+          {
+            $("#calibation_status").html(mes)
+            
+          })
+
           $( ".btn-primary" ).click(function() {
             var id =  $(this).attr('id');
             socket.emit('message', id);
@@ -82,9 +99,9 @@
             </div>
             <div class="card-body">
               <h5 class="card-title">Выбор половины поля</h5>
-              <p class="card-text">Для установки стороны поля нажмите сообтветсвующую кнопку</p>
-              <a class="btn btn-primary" id="setGreen">Зелёная сторона</a>
-              <a class="btn btn-primary" id="setOrange">Оранжевая сторона</a>
+              <p id="camera_position" class="card-text">Для установки стороны поля нажмите сообтветсвующую кнопку</p>
+              <a class="btn btn-primary" id="setGreen">жёлтая сторона</a>
+              <a class="btn btn-primary" id="setOrange">фиолетовая сторона</a>
             </div>
           </div>
         </div>
@@ -101,7 +118,8 @@
           <div class="card" style="width: 18rem;">
             <div class="card-body">
               <h5 class="card-title">Статус Сцены</h5>
-              <h6 class="card-subtitle mb-2 text-muted">Поиск кубов</h6>
+              <h6 id="scene_statuses" class="card-subtitle mb-2 text-muted">Поиск кубов</h6>
+              <h6 id="calibation_status" class="card-subtitle mb-2 text-muted"> calibation_status </h6>
               <!-- <p class="card-text">Описание?</p> -->
               <a class="btn btn-primary" id="recalibrate" >Перекалибровать</a>
               <!-- <a href="#" class="card-link">Card link</a> -->
@@ -114,7 +132,7 @@
           <div class="card" style="width: 18rem;">
             <div class="card-body">
               <h5 class="card-title">Положение роботов</h5>
-              <!-- <h6 class="card-subtitle mb-2 text-muted">Поиск кубов</h6> -->
+
               <p class="card-text" id="big_robot">наш 1 Описание?</p>
               <p class="card-text" id="small_robot">наш 2 Описание?</p>
               <p class="card-text" id="enemy1_robot">наш 3 Описание?</p>

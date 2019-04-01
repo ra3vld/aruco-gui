@@ -19,6 +19,7 @@ q_out = Queue()
 HOST_IP = "0.0.0.0"
 PORT = "5000"
 
+keys = ["Scene_statuses", "calibation_status", "camera_position"]
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="eventlet")
@@ -37,6 +38,7 @@ class Gui(Process):
         self.small_robot_pose = {"x": "", "y":"", "z": ""}
         self.enemy1_robot_pose = {"x": "", "y":"", "z": ""}
         self.enemy2_robot_pose = {"x": "", "y":"", "z": ""}
+        self.info_str = ""
         self.q_in = q_in
         self.q_out = q_out
         self.socketio = socketio
@@ -57,6 +59,8 @@ class Gui(Process):
             self.socketio.emit ("small_pose", self.small_robot_pose)
             self.socketio.emit ("enemy2_pose", self.enemy2_robot_pose)
             self.socketio.emit ("enemy1_pose", self.enemy1_robot_pose)
+            for key in self.info_str:
+                self.socketio.emit(str(key), self.info_str[key])
 
         @self.socketio.on('my_event')
         def on_connect(message):
@@ -97,20 +101,22 @@ class Gui(Process):
             else:
                 message = self.q_in.get()
                 
-                if message["robot"] == "big_robot_pose":
+                if message["topic"] == "big_robot_pose":
                     self.big_robot_pose = message["pose"]
 
-                if message["robot"] == "small_robot_pose":
+                if message["topic"] == "small_robot_pose":
                     self.small_robot_pose = message["pose"]
                     
 
-                if message["robot"] == "enemy1_robot_pose":
+                if message["topic"] == "enemy1_robot_pose":
                     self.enemy1_robot_pose = message["pose"]
                     
 
-                if message["robot"] == "enemy2_robot_pose":
+                if message["topic"] == "enemy2_robot_pose":
                     self.enemy2_robot_pose = message["pose"]
 
+                if message["topic"] == "info_str":
+                    self.info_str = message["msg"]
 
 
                     # print ("read message: ", message)
@@ -162,19 +168,39 @@ def poseStamed_to_dict(posestamped):
 
 def callback_big(data):
     big_robot_pose = poseStamed_to_dict(data)
-    q_in.put({"robot":"big_robot_pose", "pose":big_robot_pose})
+    q_in.put({"topic":"big_robot_pose", "pose":big_robot_pose})
 
 def callback_small(data):
     small_robot_pose = poseStamed_to_dict(data)
-    q_in.put({"robot":"small_robot_pose", "pose":small_robot_pose})
+    q_in.put({"topic":"small_robot_pose", "pose":small_robot_pose})
 
 def callback_enemy1(data):
     enemy1_robot_pose = poseStamed_to_dict(data)
-    q_in.put({"robot":"enemy1_robot_pose", "pose":enemy1_robot_pose})
+    q_in.put({"topic":"enemy1_robot_pose", "pose":enemy1_robot_pose})
 
 def callback_enemy2(data):
     enemy2_robot_pose = poseStamed_to_dict(data)
-    q_in.put({"robot":"enemy2_robot_pose", "pose":enemy2_robot_pose})
+    q_in.put({"topic":"enemy2_robot_pose", "pose":enemy2_robot_pose})
+
+
+
+def callback(msg):
+    info_string =msg.data
+    resul_data= {}
+    for key in keys:
+        value = find_key_value(info_string, key)
+        resul_data.update({key:value})
+    q_in.put({"topic":"info_str", "msg":resul_data})
+
+
+def find_key_value(info_string, key):
+    index = info_string.find(key)
+    index_start = info_string.find(":", index)
+    index_start += 1
+    stop_index = info_string.find("}", index)
+    if (index_start == -1) or (stop_index == -1):
+        return ("cannot parse string: " + str(info_string))
+    return info_string[index_start:stop_index]
 
 
 # start the server with the 'run()' method
@@ -194,6 +220,7 @@ if __name__ == '__main__':
     rospy.Subscriber("/small_robot/aruco", PoseStamped, callback_small)
     rospy.Subscriber("/enemy_robot1/aruco", PoseStamped, callback_enemy1)
     rospy.Subscriber("/enemy_robot2/aruco", PoseStamped, callback_enemy2)
+    subscriber = rospy.Subscriber("/aruco/info_to_gui", String, callback)
 
     
     while not rospy.is_shutdown():
