@@ -68,13 +68,14 @@ class Gui(Process):
 
         @self.socketio.on('message')
         def handle_message(message):
+            cmd = message['id']
             res = ""
-            if message == "setGreen":
+            if cmd == "setGreen":
                 res = self.call_set_side("g")
-            if message == "setOrange":
+            if cmd == "setOrange":
                 res = self.call_set_side("o")
-            if message == "recalibrate":
-                res = self.call_recalib()
+            if cmd == "recalibrate":
+                res = self.call_recalib(message['data'])
             print('received message: ' + message)
             emit ("message_reply", str(res))
             es = {"x": "", "y":"", "z": ""}
@@ -124,14 +125,14 @@ class Gui(Process):
 
     
 
-    def call_recalib(self):
+    def call_recalib(self, is_manual):
         rospy.wait_for_service('ArucoRecalibrate', 3)
         resp1 = ""
         try:
             recal = rospy.ServiceProxy('ArucoRecalibrate', ArucoRecalibrate)
-            resp1 = recal("")
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+            resp1 = recal(is_manual)
+        except rospy.ServiceException as e:
+            print ("Service call failed: %s"%e)
         return resp1
 
 
@@ -142,8 +143,8 @@ class Gui(Process):
         try:
             setSide = rospy.ServiceProxy('SetSide', SetSide)
             resp1 = setSide(color)
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+        except rospy.ServiceException as e:
+            print ("Service call failed: %s"%e)
         return resp1
 
 
